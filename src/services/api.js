@@ -110,32 +110,45 @@ export const authAPI = {
 export const suppliersAPI = {
   search: async (params = {}) => {
     // Convert our frontend params to working backend format
-    const backendParams = {
-      q: params.search || params.query || '',
-      limit: params.limit || 20,
-      offset: params.offset || 0
-    };
-    const response = await api.get('/search', { params: backendParams });
-    return {
-      success: true,
-      data: {
-        suppliers: response.data.results || [],
-        pagination: {
-          total: response.data.total || 0,
-          page: Math.floor((response.data.offset || 0) / (response.data.limit || 20)) + 1,
-          limit: response.data.limit || 20
-        }
-      }
-    };
+    const backendParams = {};
+    
+    // Always provide a search parameter - use empty string if not specified  
+    backendParams.search = params.search || params.query || '';
+    
+    backendParams.limit = params.limit || 20;
+    backendParams.page = params.page || 1;
+    
+    // Always provide a category - use 'Pet Food' as default if not specified
+    backendParams.category = (params.category && params.category !== 'all') ? params.category : 'Pet Food';
+    
+    if (params.latitude && params.longitude) {
+      backendParams.latitude = params.latitude;
+      backendParams.longitude = params.longitude;
+    }
+    
+    if (params.radius) {
+      backendParams.radius = params.radius;
+    }
+    
+    // Always provide a priceRange - use 'medium' as default if not specified
+    backendParams.priceRange = (params.priceRange && ['low', 'medium', 'high'].includes(params.priceRange)) ? params.priceRange : 'medium';
+    
+    if (params.rating) {
+      backendParams.rating = params.rating;
+    }
+    
+    console.log('API.search calling backend with params:', backendParams);
+    const response = await api.get('/suppliers', { params: backendParams });
+    console.log('Backend returned:', response.data);
+    
+    // Backend returns { success: true, data: { suppliers: [...], pagination: {...} } }
+    return response.data;
   },
 
   getById: async (id) => {
-    // Use supplier endpoint with id parameter
-    const response = await api.get('/supplier', { params: { id } });
-    return {
-      success: true,
-      data: { supplier: response.data.supplier }
-    };
+    // Use suppliers/:id endpoint
+    const response = await api.get(`/suppliers/${id}`);
+    return response.data;
   },
 
   getCategories: async () => {
@@ -158,15 +171,10 @@ export const suppliersAPI = {
   },
 
   getNearby: async (latitude, longitude, radius = 25) => {
-    const response = await api.get('/nearby', {
-      params: { lat: latitude, lng: longitude, radius },
+    const response = await api.get('/suppliers/nearby', {
+      params: { latitude, longitude, radius },
     });
-    return {
-      success: true,
-      data: {
-        suppliers: response.data.results || []
-      }
-    };
+    return response.data;
   },
 };
 

@@ -582,6 +582,7 @@ const RawgleApp = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchParams, setSearchParams] = useState({});
+  const [initialLoad, setInitialLoad] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [user, setUser] = useState(null);
@@ -604,12 +605,15 @@ const RawgleApp = () => {
     }
   }, []);
 
-  // Load initial suppliers from API
+  // Load initial suppliers from API only once on mount
   useEffect(() => {
-    loadSuppliers();
+    if (initialLoad) {
+      loadSuppliers();
+    }
   }, []);
 
   const loadSuppliers = async (params = {}) => {
+    console.log('loadSuppliers called with:', params);
     setLoading(true);
     setError('');
     
@@ -622,12 +626,16 @@ const RawgleApp = () => {
         radius: params.radius || '10',
         ...(params.category && params.category !== 'all' && { category: params.category })
       };
-
+      
+      console.log('API call with searchParams:', searchParams);
       const response = await suppliersAPI.search(searchParams);
+      console.log('API response received:', response);
 
       if (response.success && response.data && response.data.suppliers) {
+        console.log('Setting suppliers:', response.data.suppliers.length, 'suppliers found');
         setSuppliers(response.data.suppliers);
       } else {
+        console.log('Failed response:', response);
         setError('Failed to load suppliers');
       }
     } catch (err) {
@@ -639,7 +647,9 @@ const RawgleApp = () => {
   };
 
   const handleSearch = (params) => {
+    console.log('Search triggered with params:', params);
     setSearchParams(params);
+    setInitialLoad(false); // Prevent initial load from interfering
     loadSuppliers(params);
   };
 

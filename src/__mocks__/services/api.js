@@ -1,33 +1,4 @@
-import '@testing-library/jest-dom';
 import { vi } from 'vitest';
-
-// Mock window.alert
-global.alert = vi.fn();
-
-// Mock window.open
-global.open = vi.fn();
-
-// Mock localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-global.localStorage = localStorageMock;
-
-// Mock the API services module directly
-vi.mock('./services/api.js');
-
-// Mock fetch globally to prevent any fetch calls
-global.fetch = vi.fn();
-
-// Mock geolocation API
-global.navigator.geolocation = {
-  getCurrentPosition: vi.fn(),
-  watchPosition: vi.fn(),
-  clearWatch: vi.fn(),
-};
 
 // Test data for mocking
 export const mockSuppliersData = {
@@ -147,3 +118,98 @@ export const mockEmptySearchData = {
     }
   }
 };
+
+// Mock implementations for all API functions
+export const suppliersAPI = {
+  search: vi.fn().mockResolvedValue(mockSuppliersData),
+  getById: vi.fn().mockResolvedValue({
+    success: true,
+    data: {
+      supplier: {
+        id: 1,
+        name: 'Test Supplier',
+        category: 'Pet Food'
+      }
+    }
+  }),
+  getCategories: vi.fn().mockResolvedValue({
+    success: true,
+    data: {
+      categories: [
+        { id: 1, name: 'Pet Grooming', icon: 'scissors' },
+        { id: 2, name: 'Veterinary', icon: 'medical' },
+        { id: 3, name: 'Pet Training', icon: 'graduation-cap' },
+        { id: 4, name: 'Pet Sitting', icon: 'home' },
+        { id: 5, name: 'Pet Walking', icon: 'walk' },
+        { id: 6, name: 'Pet Food', icon: 'shopping-cart' },
+        { id: 7, name: 'Pet Supplies', icon: 'gift' },
+        { id: 8, name: 'Emergency Care', icon: 'ambulance' }
+      ]
+    }
+  }),
+  getNearby: vi.fn().mockResolvedValue({
+    success: true,
+    data: {
+      suppliers: []
+    }
+  })
+};
+
+export const authAPI = {
+  register: vi.fn().mockResolvedValue({ success: true }),
+  login: vi.fn().mockResolvedValue({ success: true }),
+  logout: vi.fn().mockResolvedValue({ success: true }),
+  getCurrentUser: vi.fn().mockResolvedValue({ success: true }),
+  updateProfile: vi.fn().mockResolvedValue({ success: true }),
+  changePassword: vi.fn().mockResolvedValue({ success: true })
+};
+
+export const pawsAPI = {
+  getBalance: vi.fn().mockResolvedValue({ success: true, data: { balance: 1250 } }),
+  getTransactions: vi.fn().mockResolvedValue({ success: true, data: { transactions: [] } }),
+  transfer: vi.fn().mockResolvedValue({ success: true }),
+  earnReward: vi.fn().mockResolvedValue({ success: true }),
+  getRewardRates: vi.fn().mockResolvedValue({ success: true, data: { rates: {} } })
+};
+
+export const reviewsAPI = {
+  getBySupplier: vi.fn().mockResolvedValue({ success: true, data: { reviews: [] } }),
+  create: vi.fn().mockResolvedValue({ success: true }),
+  update: vi.fn().mockResolvedValue({ success: true }),
+  delete: vi.fn().mockResolvedValue({ success: true }),
+  getUserReviews: vi.fn().mockResolvedValue({ success: true, data: { reviews: [] } })
+};
+
+export const ordersAPI = {
+  create: vi.fn().mockResolvedValue({ success: true }),
+  getById: vi.fn().mockResolvedValue({ success: true }),
+  getUserOrders: vi.fn().mockResolvedValue({ success: true, data: { orders: [] } }),
+  updateStatus: vi.fn().mockResolvedValue({ success: true }),
+  cancel: vi.fn().mockResolvedValue({ success: true })
+};
+
+export const notificationsAPI = {
+  getAll: vi.fn().mockResolvedValue({ success: true, data: { notifications: [] } }),
+  markAsRead: vi.fn().mockResolvedValue({ success: true }),
+  markAllAsRead: vi.fn().mockResolvedValue({ success: true }),
+  getUnreadCount: vi.fn().mockResolvedValue({ success: true, data: { count: 0 } })
+};
+
+export const apiUtils = {
+  handleError: vi.fn(),
+  formatResponse: vi.fn(),
+  isAuthenticated: vi.fn().mockReturnValue(false),
+  getAuthToken: vi.fn(),
+  setAuthToken: vi.fn(),
+  clearAuthToken: vi.fn()
+};
+
+// Mock default export
+const api = {
+  get: vi.fn(),
+  post: vi.fn(),
+  put: vi.fn(),
+  delete: vi.fn()
+};
+
+export default api;
