@@ -1,32 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Star, Filter, Phone, Clock, ChevronRight, DollarSign, Truck, Shield, Award } from 'lucide-react';
-import { suppliersAPI, authAPI, apiUtils } from './services/api';
+import { Search, MapPin, Star, Filter, Phone, Clock, ChevronRight, DollarSign, Truck, Shield, Award, MessageSquare, Menu, X } from 'lucide-react';
+import { suppliersAPI, authAPI, pawsAPI, apiUtils } from './services/api';
 import ProductionMap from './components/ProductionMap';
+import ChatInterface from './components/ChatInterface';
+import MainMenu from './components/navigation/MainMenu';
+import PageRouter from './components/pages/PageRouter';
 
-// PAWS Token Display Component
-const PAWSBalance = ({ balance = 1250 }) => {
+// Reward Points Display Component
+const PAWSBalance = ({ balance = 0, loading = false, onClick }) => {
   return (
-    <div className="flex items-center gap-2 bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-2 rounded-lg border border-amber-200">
+    <button 
+      onClick={onClick}
+      className="flex items-center gap-2 bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-2 rounded-lg border border-amber-200 hover:border-amber-300 transition-colors cursor-pointer"
+    >
       <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
         <span className="text-xs">🐾</span>
       </div>
       <div>
-        <div className="text-xs text-amber-600">PAWS Balance</div>
-        <div className="font-bold text-amber-900">{balance.toLocaleString()}</div>
+        <div className="text-xs text-amber-600">Reward Points</div>
+        <div className="font-bold text-amber-900">
+          {loading ? '...' : balance.toLocaleString()}
+        </div>
       </div>
-    </div>
+    </button>
   );
 };
 
 // Navigation Bar
-const Navigation = ({ onShowLogin, onShowRegister, user, pawsBalance }) => {
+const Navigation = ({ onShowLogin, onShowRegister, user, pawsBalance, pawsLoading, onPawsClick, onShowMenu }) => {
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex items-center">
+          {/* Left side with menu and logo */}
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={onShowMenu}
+              className="text-gray-600 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Open Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-xl">R</span>
@@ -40,8 +55,14 @@ const Navigation = ({ onShowLogin, onShowRegister, user, pawsBalance }) => {
 
           {/* Right side */}
           <div className="flex items-center gap-4">
-            <PAWSBalance balance={pawsBalance} />
-            <button className="text-gray-600 hover:text-gray-900 p-2">
+            {user && (
+              <PAWSBalance 
+                balance={pawsBalance} 
+                loading={pawsLoading} 
+                onClick={onPawsClick}
+              />
+            )}
+            <button className="text-gray-600 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
@@ -322,7 +343,7 @@ const HeroSearch = ({ onSearch }) => {
             Find Premium Raw Dog Food Near You
           </h1>
           <p className="text-xl text-emerald-100">
-            Discover trusted suppliers, earn PAWS rewards, and give your dog the nutrition they deserve
+            Discover trusted suppliers, earn reward points, and give your dog the nutrition they deserve
           </p>
         </div>
 
@@ -399,7 +420,7 @@ const HeroSearch = ({ onSearch }) => {
 };
 
 // Enhanced Supplier Card Component with Rawgle Production Theme
-const SupplierCard = ({ supplier }) => {
+const SupplierCard = ({ supplier, onViewDetails }) => {
   const earnRate = Math.round(supplier.avgPrice * 0.1 || 5); // 10% PAWS back
   const distance = supplier.distance || '2.3';
 
@@ -536,13 +557,13 @@ const SupplierCard = ({ supplier }) => {
         {/* Action Buttons */}
         <div className="flex gap-2">
           <button 
-            onClick={() => alert(`${supplier.name}\n\n📍 ${supplier.location_address}\n📞 ${supplier.contact_phone || 'N/A'}\n🌐 ${supplier.website_url || 'N/A'}\n⭐ Rating: ${supplier.rating_average}/5\n📝 ${supplier.description}`)}
+            onClick={() => onViewDetails?.(supplier)}
             className="flex-1 py-2 px-3 rounded-lg text-white font-medium text-sm transition-all duration-300 hover:shadow-md"
             style={{ backgroundColor: '#D4A574' }}
             onMouseEnter={(e) => e.target.style.backgroundColor = '#B8956A'}
             onMouseLeave={(e) => e.target.style.backgroundColor = '#D4A574'}
           >
-            View Details
+            More Details
           </button>
           <button 
             onClick={() => window.open(`https://maps.google.com/?q=${supplier.location_address}`, '_blank')}
@@ -588,6 +609,29 @@ const RawgleApp = () => {
   const [user, setUser] = useState(null);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [showChat, setShowChat] = useState(false);
+  const [pawsBalance, setPawsBalance] = useState(0);
+  const [pawsLoading, setPawsLoading] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [currentPage, setCurrentPage] = useState('search');
+  const [selectedSupplierId, setSelectedSupplierId] = useState(null);
+
+  // Load PAWS balance from backend
+  const loadPawsBalance = async () => {
+    if (!user || !apiUtils.isAuthenticated()) return;
+    
+    setPawsLoading(true);
+    try {
+      const response = await pawsAPI.getBalance();
+      if (response.success && response.data) {
+        setPawsBalance(response.data.balance || 0);
+      }
+    } catch (err) {
+      console.error('Error loading PAWS balance:', err);
+    } finally {
+      setPawsLoading(false);
+    }
+  };
 
   // Initialize user from localStorage
   useEffect(() => {
@@ -596,7 +640,10 @@ const RawgleApp = () => {
     
     if (savedUser && savedToken) {
       try {
-        setUser(JSON.parse(savedUser));
+        const userData = JSON.parse(savedUser);
+        setUser(userData);
+        // Load PAWS balance after setting user
+        setTimeout(loadPawsBalance, 100);
       } catch (err) {
         console.error('Error parsing saved user:', err);
         localStorage.removeItem('rawgle_user');
@@ -605,6 +652,15 @@ const RawgleApp = () => {
     }
   }, []);
 
+  // Load PAWS balance when user changes
+  useEffect(() => {
+    if (user && apiUtils.isAuthenticated()) {
+      loadPawsBalance();
+    } else {
+      setPawsBalance(0);
+    }
+  }, [user]);
+
   // Load initial suppliers from API only once on mount
   useEffect(() => {
     if (initialLoad) {
@@ -612,20 +668,63 @@ const RawgleApp = () => {
     }
   }, []);
 
+  // Helper function to detect if query is a location vs text search
+  const isLocationQuery = (query) => {
+    if (!query) return false;
+    
+    // Common location patterns
+    const locationPatterns = [
+      /^[a-zA-Z\s]+,\s*[A-Z]{2}$/i, // "New York, NY"
+      /^\d{5}(-\d{4})?$/,           // ZIP codes
+      /^(new york|los angeles|chicago|houston|philadelphia|phoenix|san antonio|san diego|dallas|san jose|austin|jacksonville|fort worth|columbus|charlotte|san francisco|indianapolis|seattle|denver|washington|boston|el paso|detroit|nashville|memphis|portland|oklahoma city|las vegas|louisville|baltimore|milwaukee|albuquerque|tucson|fresno|sacramento|mesa|kansas city|atlanta|long beach|colorado springs|raleigh|miami|virginia beach|omaha|minneapolis|tulsa|cleveland|wichita|arlington)$/i, // Major US cities
+      /^[a-zA-Z\s]+(city|town|village|county)$/i, // Places with city/town/village/county
+    ];
+    
+    return locationPatterns.some(pattern => pattern.test(query.trim()));
+  };
+
   const loadSuppliers = async (params = {}) => {
     console.log('loadSuppliers called with:', params);
     setLoading(true);
     setError('');
     
     try {
-      const searchParams = {
-        search: params.query || params.search || '',
-        location: params.location || '',
-        latitude: params.latitude || '40.7128',
-        longitude: params.longitude || '-74.0060',
-        radius: params.radius || '10',
-        ...(params.category && params.category !== 'all' && { category: params.category })
-      };
+      let searchParams = {};
+      
+      // If this is a user search (has query, location, or specific coordinates), use those params
+      if (params.query || params.search || params.location || (params.latitude && params.longitude)) {
+        const query = params.query || params.search || '';
+        
+        // Determine if the query should be treated as a location search
+        if (params.location || isLocationQuery(query)) {
+          // This is a location-based search - use the query as location
+          searchParams = {
+            search: '', // Clear text search
+            location: params.location || query, // Use as location
+            radius: params.radius || '50', // Larger radius for location searches
+            ...(params.category && params.category !== 'all' && { category: params.category })
+          };
+        } else {
+          // This is a text/product search - keep current IP location but filter by text
+          searchParams = {
+            search: query,
+            location: params.location || '',
+            ...(params.latitude && params.longitude && {
+              latitude: params.latitude,
+              longitude: params.longitude
+            }),
+            radius: params.radius || '25',
+            ...(params.category && params.category !== 'all' && { category: params.category })
+          };
+        }
+      } else {
+        // Default load: let backend use IP-based geolocation (no params = IP detection)
+        searchParams = {
+          search: '',
+          // Don't include latitude/longitude - let backend detect from IP
+          radius: '20' // 20km as per backend default
+        };
+      }
       
       console.log('API call with searchParams:', searchParams);
       const response = await suppliersAPI.search(searchParams);
@@ -634,6 +733,7 @@ const RawgleApp = () => {
       if (response.success && response.data && response.data.suppliers) {
         console.log('Setting suppliers:', response.data.suppliers.length, 'suppliers found');
         setSuppliers(response.data.suppliers);
+        setSearchParams(params); // Store the search params for display
       } else {
         console.log('Failed response:', response);
         setError('Failed to load suppliers');
@@ -660,6 +760,8 @@ const RawgleApp = () => {
     setShowLogin(false);
     setSuccessMessage(`Welcome back, ${userData.name}!`);
     setTimeout(() => setSuccessMessage(''), 5000);
+    // Load PAWS balance after successful login
+    setTimeout(loadPawsBalance, 500);
   };
 
   const handleRegisterSuccess = ({ user: userData, token }) => {
@@ -667,8 +769,61 @@ const RawgleApp = () => {
     localStorage.setItem('rawgle_user', JSON.stringify(userData));
     localStorage.setItem('rawgle_token', token);
     setShowRegister(false);
-    setSuccessMessage(`Registration successful! Welcome to Rawgle, ${userData.name}! You've received ${userData.pawsBalance} PAWS as a welcome bonus.`);
+    setSuccessMessage(`Registration successful! Welcome to Rawgle, ${userData.name}! You've been awarded welcome reward points!`);
     setTimeout(() => setSuccessMessage(''), 8000);
+    // Load PAWS balance after successful registration
+    setTimeout(loadPawsBalance, 500);
+  };
+
+  // Menu and navigation handlers
+  const handleShowMenu = () => {
+    setShowMenu(true);
+  };
+
+  const handleCloseMenu = () => {
+    setShowMenu(false);
+  };
+
+  // Handle viewing supplier details
+  const handleViewSupplierDetails = (supplier) => {
+    setSelectedSupplierId(supplier.id);
+    setCurrentPage('supplier-detail');
+  };
+
+  const handleNavigate = (page) => {
+    setCurrentPage(page);
+    setShowMenu(false);
+    
+    // Handle special navigation cases
+    switch (page) {
+      case 'login':
+        setShowLogin(true);
+        break;
+      case 'register':
+        setShowRegister(true);
+        break;
+      case 'chat':
+        setShowChat(true);
+        break;
+      case 'logout':
+        setUser(null);
+        localStorage.removeItem('rawgle_user');
+        localStorage.removeItem('rawgle_token');
+        setPawsBalance(0);
+        setCurrentPage('search');
+        setSelectedSupplierId(null);
+        setSuccessMessage('You have been logged out');
+        setTimeout(() => setSuccessMessage(''), 3000);
+        break;
+      case 'search':
+        // Return to main search view
+        setCurrentPage('search');
+        setSelectedSupplierId(null);
+        break;
+      default:
+        // For other pages, just set the current page
+        break;
+    }
   };
 
   return (
@@ -677,9 +832,11 @@ const RawgleApp = () => {
         onShowLogin={() => setShowLogin(true)}
         onShowRegister={() => setShowRegister(true)}
         user={user}
-        pawsBalance={user?.pawsBalance || 1250}
+        pawsBalance={pawsBalance}
+        pawsLoading={pawsLoading}
+        onPawsClick={() => loadPawsBalance()}
+        onShowMenu={handleShowMenu}
       />
-      <HeroSearch onSearch={handleSearch} />
       
       {/* Success Message */}
       {successMessage && (
@@ -694,15 +851,42 @@ const RawgleApp = () => {
           </div>
         </div>
       )}
-      
-      {/* Results Section with Map */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      {/* MainMenu Component */}
+      <MainMenu
+        user={user}
+        isOpen={showMenu}
+        onClose={handleCloseMenu}
+        onNavigate={handleNavigate}
+      />
+
+      {/* Page Router - Show feature pages or main search */}
+      {currentPage !== 'search' ? (
+        <PageRouter
+          currentPage={currentPage}
+          onBack={() => {
+            setCurrentPage('search');
+            setSelectedSupplierId(null);
+          }}
+          user={user}
+          supplierId={selectedSupplierId}
+        />
+      ) : (
+        <>
+          <HeroSearch onSearch={handleSearch} />
+          
+          {/* Results Section with Map */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Results Header */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
             {loading ? 'Loading...' : `${suppliers.length} Suppliers Found`}
           </h2>
-          <p className="text-gray-600">Premium raw dog food suppliers in your area</p>
+          <p className="text-gray-600">
+            {searchParams.query || searchParams.search || searchParams.location 
+              ? `Results for "${searchParams.query || searchParams.search || searchParams.location}"`
+              : 'Premium raw dog food suppliers near your location'}
+          </p>
         </div>
 
         {/* Error Message */}
@@ -729,7 +913,7 @@ const RawgleApp = () => {
               onSupplierClick={(supplierId) => {
                 const supplier = suppliers.find(s => s.id === supplierId);
                 if (supplier) {
-                  alert(`${supplier.name}\n\n📍 ${supplier.location_address}\n📞 ${supplier.contact_phone || 'N/A'}\n🌐 ${supplier.website_url || 'N/A'}\n⭐ Rating: ${supplier.rating_average}/5`);
+                  handleViewSupplierDetails(supplier);
                 }
               }}
             />
@@ -799,7 +983,7 @@ const RawgleApp = () => {
                   {/* Action Buttons */}
                   <div className="flex gap-2">
                     <button 
-                      onClick={() => alert(`${supplier.name}\n\n📍 ${supplier.location_address}\n📞 ${supplier.contact_phone || 'N/A'}\n🌐 ${supplier.website_url || 'N/A'}\n⭐ Rating: ${supplier.rating_average}/5`)}
+                      onClick={() => handleViewSupplierDetails(supplier)}
                       className="flex-1 py-1.5 px-2 rounded text-white text-xs font-medium transition-all duration-300"
                       style={{ backgroundColor: '#D4A574' }}
                       onMouseEnter={(e) => e.target.style.backgroundColor = '#B8956A'}
@@ -863,6 +1047,8 @@ const RawgleApp = () => {
           </div>
         </div>
       )}
+        </>
+      )}
 
       {/* Login Modal */}
       {showLogin && (
@@ -879,6 +1065,23 @@ const RawgleApp = () => {
           onSuccess={handleRegisterSuccess}
         />
       )}
+
+      {/* Floating Chat Button */}
+      {user && (
+        <button
+          onClick={() => setShowChat(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-40 flex items-center justify-center"
+        >
+          <MessageSquare className="w-6 h-6" />
+        </button>
+      )}
+
+      {/* Chat Interface */}
+      <ChatInterface 
+        isOpen={showChat}
+        onClose={() => setShowChat(false)}
+        user={user}
+      />
     </div>
   );
 };

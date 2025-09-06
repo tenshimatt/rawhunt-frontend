@@ -19,32 +19,56 @@ export const PawsProvider = ({ children }) => {
   const [rewardRates, setRewardRates] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Fetch balance when user logs in
+  // Fetch balance when user logs in (with initialization guard)
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchBalance();
-      fetchRewardRates();
-    } else {
+    let isMounted = true;
+    
+    if (isAuthenticated && !isInitialized) {
+      console.log('🔄 Initializing reward points data...');
+      setIsInitialized(true);
+      
+      const initializeRewardPoints = async () => {
+        if (isMounted) {
+          await fetchBalance();
+          // fetchRewardRates(); // TODO: Backend endpoint not implemented yet
+        }
+      };
+      
+      initializeRewardPoints();
+    } else if (!isAuthenticated) {
       setBalance(0);
       setTransactions([]);
       setRewardRates({});
+      setIsInitialized(false);
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [isAuthenticated]);
 
   const fetchBalance = async () => {
+    if (loading) {
+      console.log('⚠️ Points balance fetch already in progress, skipping...');
+      return balance;
+    }
+    
     try {
       setLoading(true);
       setError(null);
+      console.log('🔍 Fetching reward points balance...');
       
       const response = await pawsAPI.getBalance();
       setBalance(response.data.balance);
+      console.log('✅ Reward points balance updated:', response.data.balance);
       
       return response.data.balance;
     } catch (error) {
       const errorMessage = apiUtils.handleError(error);
       setError(errorMessage);
-      console.error('Failed to fetch PAWS balance:', error);
+      console.error('❌ Failed to fetch reward points balance:', error);
       return 0;
     } finally {
       setLoading(false);
@@ -75,18 +99,13 @@ export const PawsProvider = ({ children }) => {
     }
   };
 
+  // Removed fetchRewardRates - backend endpoint not implemented
   const fetchRewardRates = async () => {
-    try {
-      const response = await pawsAPI.getRewardRates();
-      setRewardRates(response.data.rates);
-      return response.data.rates;
-    } catch (error) {
-      console.error('Failed to fetch reward rates:', error);
-      return {};
-    }
+    console.log('fetchRewardRates called but disabled - backend endpoint not implemented');
+    return {};
   };
 
-  const transferPaws = async (recipientId, amount, description) => {
+  const transferPoints = async (recipientId, amount, description) => {
     try {
       setLoading(true);
       setError(null);
@@ -145,19 +164,19 @@ export const PawsProvider = ({ children }) => {
     }
   };
 
-  // Calculate estimated PAWS reward for an order
+  // Calculate estimated reward points for an order
   const calculateOrderReward = (orderAmount, supplierMultiplier = 1) => {
     const baseRate = rewardRates.order_percentage || 0.1; // 10% default
     return Math.round(orderAmount * baseRate * supplierMultiplier);
   };
 
-  // Calculate estimated PAWS reward for a review
+  // Calculate estimated reward points for a review
   const calculateReviewReward = () => {
-    return rewardRates.review_amount || 50; // 50 PAWS default
+    return rewardRates.review_amount || 50; // 50 points default
   };
 
-  // Format PAWS amount for display
-  const formatPawsAmount = (amount) => {
+  // Format reward points amount for display
+  const formatPointsAmount = (amount) => {
     return amount?.toLocaleString() || '0';
   };
 
@@ -200,13 +219,13 @@ export const PawsProvider = ({ children }) => {
 
   const clearError = () => setError(null);
 
-  // Refresh all PAWS data
+  // Refresh all reward points data
   const refresh = async () => {
     if (isAuthenticated) {
       await Promise.all([
         fetchBalance(),
         fetchTransactions(1, 20),
-        fetchRewardRates(),
+        // fetchRewardRates(), // TODO: Backend endpoint not implemented yet
       ]);
     }
   };
@@ -219,14 +238,17 @@ export const PawsProvider = ({ children }) => {
     error,
     fetchBalance,
     fetchTransactions,
-    transferPaws,
+    transferPoints,
     earnReward,
     calculateOrderReward,
     calculateReviewReward,
-    formatPawsAmount,
+    formatPointsAmount,
     getTransactionTypeInfo,
     clearError,
     refresh,
+    // Legacy aliases for backward compatibility
+    transferPaws: transferPoints,
+    formatPawsAmount: formatPointsAmount,
   };
 
   return (

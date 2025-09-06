@@ -11,11 +11,19 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:foundation": "node scripts/test-foundation.js",
+    "test:foundation:verbose": "VERBOSE=1 node scripts/test-foundation.js",
+    "test:all": "npm run test:foundation && npm run test:coverage && npm run test:e2e"
   },
   "dependencies": {
+    "@auth0/auth0-react": "^2.4.0",
+    "@google-cloud/local-auth": "^3.0.1",
     "@hookform/resolvers": "^5.2.1",
     "axios": "^1.11.0",
+    "clsx": "^2.1.1",
+    "google-auth-library": "^10.3.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.539.0",
     "react": "^19.1.1",
@@ -35,6 +43,7 @@
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/coverage-v8": "^3.2.4",
     "autoprefixer": "^10.4.21",
+    "chalk": "^4.1.2",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",

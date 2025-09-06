@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { loginSchema } from '../../utils/validation';
+import SocialLoginButtons from './SocialLoginButtons';
 
 const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
   const { login, loading, error, clearError } = useAuth();
@@ -156,6 +157,19 @@ const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
             'Sign In'
           )}
         </button>
+        
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+          </div>
+        </div>
+
+        {/* Social Login Buttons */}
+        <SocialLoginButtons />
 
         {/* Sign Up Link */}
         <div className="text-center">

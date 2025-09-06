@@ -4,6 +4,13 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    sourcemap: true, // Use external source maps instead of inline eval
+  },
+  server: {
+    // For development, disable eval-based source maps to avoid CSP issues
+    sourcemapIgnoreList: false,
+  },
   test: {
     globals: true,
     environment: 'jsdom',

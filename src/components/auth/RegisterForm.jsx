@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, Mail, Lock, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { registrationSchema } from '../../utils/validation';
 
@@ -52,37 +52,70 @@ const RegisterForm = ({ onSuccess, onSwitchToLogin }) => {
     }
   };
 
-  // Password strength indicator
+  // Enhanced password strength indicator with requirements
   const getPasswordStrength = (password) => {
-    if (!password) return { strength: 0, label: '' };
+    if (!password) return { 
+      strength: 0, 
+      label: '', 
+      percentage: 0,
+      requirements: {
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        special: false
+      }
+    };
     
-    let strength = 0;
-    let label = 'Weak';
+    const requirements = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
     
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[a-z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    const metRequirements = Object.values(requirements).filter(Boolean).length;
+    let label = 'Very Weak';
+    let colorClass = 'bg-red-500';
     
-    if (strength >= 4) label = 'Strong';
-    else if (strength >= 3) label = 'Good';
-    else if (strength >= 2) label = 'Fair';
+    if (metRequirements === 5) {
+      label = 'Strong';
+      colorClass = 'bg-green-500';
+    } else if (metRequirements === 4) {
+      label = 'Good';
+      colorClass = 'bg-green-400';
+    } else if (metRequirements === 3) {
+      label = 'Fair';
+      colorClass = 'bg-yellow-500';
+    } else if (metRequirements >= 2) {
+      label = 'Weak';
+      colorClass = 'bg-orange-500';
+    }
     
-    return { strength: Math.min(strength, 4), label };
+    return { 
+      strength: metRequirements, 
+      label,
+      colorClass,
+      percentage: (metRequirements / 5) * 100,
+      requirements 
+    };
   };
 
   const passwordStrength = getPasswordStrength(password);
 
   return (
-    <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8">
-      <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-          <span className="text-white font-bold text-2xl">R</span>
+    <div className="min-h-screen flex items-center justify-center px-4 py-6 bg-gray-50">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-10">
+        {/* Header Design - Pixel Perfect */}
+        <div className="text-center mb-8">
+          <h1 className="font-bold text-2xl leading-8 text-gray-900 mb-4" style={{ fontFamily: 'Poppins' }}>
+            Join the Raw Feeding Community
+          </h1>
+          <p className="text-base leading-6 text-gray-600 mb-8" style={{ fontFamily: 'Inter' }}>
+            Start your pet's raw feeding journey today
+          </p>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">Join Rawgle</h2>
-        <p className="text-gray-600 mt-2">Create your account and start earning PAWS</p>
-      </div>
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
@@ -325,7 +358,7 @@ const RegisterForm = ({ onSuccess, onSwitchToLogin }) => {
             <CheckCircle className="w-6 h-6 text-amber-600" />
             <div>
               <p className="font-medium text-amber-900">Welcome Bonus!</p>
-              <p className="text-sm text-amber-700">Get 100 PAWS when you create your account</p>
+              <p className="text-sm text-amber-700">Get 100 reward points when you create your account</p>
             </div>
           </div>
         </div>
@@ -360,6 +393,7 @@ const RegisterForm = ({ onSuccess, onSwitchToLogin }) => {
           </p>
         </div>
       </form>
+      </div>
     </div>
   );
 };
