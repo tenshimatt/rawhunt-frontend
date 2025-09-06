@@ -1,7 +1,17 @@
 import axios from 'axios';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://rawgle-backend.findrawdogfood.workers.dev';
+console.log('🔍 Environment Debug:', {
+  VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  MODE: import.meta.env.MODE,
+  DEV: import.meta.env.DEV,
+  PROD: import.meta.env.PROD
+});
+
+// Use local backend in development, production backend in production
+const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:8787' : 'https://rawgle-backend.findrawdogfood.workers.dev';
+console.log('🎯 API_BASE_URL:', API_BASE_URL);
+console.log('🔥 Environment mode:', import.meta.env.MODE);
 
 // Create axios instance with default configuration
 const api = axios.create({
@@ -49,8 +59,9 @@ export const authAPI = {
     const backendData = {
       email: userData.email,
       password: userData.password,
-      name: `${userData.firstName} ${userData.lastName}`.trim(),
-      phone: userData.phoneNumber || undefined
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      phoneNumber: userData.phoneNumber || undefined
     };
     
     const response = await api.post('/auth/register', backendData);
@@ -104,6 +115,21 @@ export const authAPI = {
     const response = await api.post('/auth/change-password', passwordData);
     return response.data;
   },
+
+  syncAuth0User: async (auth0Data) => {
+    const response = await api.post('/auth/auth0-sync', auth0Data);
+    
+    // Store the token if provided
+    if (response.data.token) {
+      setToken(response.data.token);
+      return { data: response.data };
+    } else if (response.data.data?.token) {
+      setToken(response.data.data.token);
+      return response.data;
+    }
+    
+    return response.data;
+  },
 };
 
 // Suppliers API (Updated to match working backend endpoints)
@@ -112,15 +138,20 @@ export const suppliersAPI = {
     // Convert our frontend params to working backend format
     const backendParams = {};
     
-    // Always provide a search parameter - use empty string if not specified  
-    backendParams.search = params.search || params.query || '';
+    // Only include search parameter if provided
+    if (params.search || params.query) {
+      backendParams.search = params.search || params.query;
+    }
     
-    backendParams.limit = params.limit || 20;
+    backendParams.limit = params.limit || 50;
     backendParams.page = params.page || 1;
     
-    // Always provide a category - use 'Pet Food' as default if not specified
-    backendParams.category = (params.category && params.category !== 'all') ? params.category : 'Pet Food';
+    // Only include category if specifically provided
+    if (params.category && params.category !== 'all') {
+      backendParams.category = params.category;
+    }
     
+    // Only include coordinates if provided (otherwise backend uses IP detection)
     if (params.latitude && params.longitude) {
       backendParams.latitude = params.latitude;
       backendParams.longitude = params.longitude;
@@ -130,8 +161,10 @@ export const suppliersAPI = {
       backendParams.radius = params.radius;
     }
     
-    // Always provide a priceRange - use 'medium' as default if not specified
-    backendParams.priceRange = (params.priceRange && ['low', 'medium', 'high'].includes(params.priceRange)) ? params.priceRange : 'medium';
+    // Only include price range if specified
+    if (params.priceRange && ['low', 'medium', 'high'].includes(params.priceRange)) {
+      backendParams.priceRange = params.priceRange;
+    }
     
     if (params.rating) {
       backendParams.rating = params.rating;
@@ -141,7 +174,24 @@ export const suppliersAPI = {
     const response = await api.get('/suppliers', { params: backendParams });
     console.log('Backend returned:', response.data);
     
-    // Backend returns { success: true, data: { suppliers: [...], pagination: {...} } }
+    // Transform backend response to match frontend expectations
+    if (response.data.success && response.data.data) {
+      const backendData = response.data.data;
+      return {
+        success: true,
+        data: {
+          suppliers: backendData.suppliers,
+          pagination: {
+            currentPage: backendData.pagination.page,
+            totalPages: backendData.pagination.totalPages,
+            totalResults: backendData.pagination.total,
+            hasMore: backendData.pagination.page < backendData.pagination.totalPages,
+          }
+        }
+      };
+    }
+    
+    // Fallback to original response
     return response.data;
   },
 
@@ -304,6 +354,29 @@ export const notificationsAPI = {
 
   getUnreadCount: async () => {
     const response = await api.get('/notifications/unread-count');
+    return response.data;
+  },
+};
+
+// Claude AI Chat API
+export const chatAPI = {
+  sendMessage: async (message, context = {}) => {
+    const response = await api.post('/chat', {
+      message,
+      context,
+    });
+    return response.data;
+  },
+
+  getChatHistory: async (page = 1, limit = 20) => {
+    const response = await api.get('/chat/history', {
+      params: { page, limit },
+    });
+    return response.data;
+  },
+
+  clearChatHistory: async () => {
+    const response = await api.delete('/chat/history');
     return response.data;
   },
 };

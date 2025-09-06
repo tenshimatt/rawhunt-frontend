@@ -1,13 +1,14 @@
 import React from 'react';
-import { Star, MapPin, Truck, Phone, Clock, ChevronRight, ExternalLink } from 'lucide-react';
+import { Star, MapPin, Truck, Phone, Clock, ChevronRight, ExternalLink, MessageSquare } from 'lucide-react';
 import { usePaws } from '../../contexts/PawsContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { StarRating } from '../reviews';
 
 const SupplierCard = ({ supplier, onViewDetails, onGetDirections }) => {
   const { isAuthenticated } = useAuth();
   const { calculateOrderReward, formatPawsAmount } = usePaws();
 
-  // Calculate estimated PAWS reward
+  // Calculate estimated reward points
   const earnRate = calculateOrderReward(supplier.average_order_amount || 50, supplier.paws_multiplier || 1);
 
   const handleViewDetails = () => {
@@ -126,10 +127,15 @@ const SupplierCard = ({ supplier, onViewDetails, onGetDirections }) => {
           </div>
           
           {supplier.average_rating && (
-            <div className="flex items-center gap-1">
-              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-              <span className="font-bold text-gray-900">{supplier.average_rating.toFixed(1)}</span>
-              <span className="text-sm text-gray-500">({supplier.review_count || 0})</span>
+            <div className="flex flex-col items-end">
+              <div className="flex items-center gap-1 mb-1">
+                <StarRating rating={supplier.average_rating} readonly size="sm" />
+                <span className="font-bold text-gray-900 ml-1">{supplier.average_rating.toFixed(1)}</span>
+              </div>
+              <div className="flex items-center gap-1 text-sm text-gray-500">
+                <MessageSquare className="w-3 h-3" />
+                <span>{supplier.review_count || 0} reviews</span>
+              </div>
             </div>
           )}
         </div>
@@ -163,14 +169,14 @@ const SupplierCard = ({ supplier, onViewDetails, onGetDirections }) => {
           </div>
         )}
 
-        {/* PAWS Rewards */}
+        {/* Reward Points */}
         {isAuthenticated && (
           <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-3 mb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-lg">🐾</span>
                 <span className="font-medium text-amber-900">
-                  Earn {formatPawsAmount(earnRate)} PAWS per order
+                  Earn {formatPawsAmount(earnRate)} points per order
                 </span>
               </div>
               <span className="text-sm text-amber-600">
@@ -179,7 +185,7 @@ const SupplierCard = ({ supplier, onViewDetails, onGetDirections }) => {
             </div>
             {supplier.paws_multiplier > 1 && (
               <div className="text-xs text-amber-700 mt-1">
-                {supplier.paws_multiplier}x PAWS multiplier active!
+                {supplier.paws_multiplier}x points multiplier active!
               </div>
             )}
           </div>

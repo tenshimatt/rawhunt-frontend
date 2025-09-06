@@ -96,16 +96,19 @@ export const orderSchema = z.object({
   }),
 });
 
-// PAWS transfer schema
-export const pawsTransferSchema = z.object({
+// Points transfer schema
+export const pointsTransferSchema = z.object({
   recipientEmail: emailSchema,
   amount: z.number()
-    .min(10, 'Minimum transfer amount is 10 PAWS')
-    .max(10000, 'Maximum transfer amount is 10,000 PAWS'),
+    .min(10, 'Minimum transfer amount is 10 points')
+    .max(10000, 'Maximum transfer amount is 10,000 points'),
   description: z.string()
     .max(200, 'Description must be less than 200 characters')
     .optional(),
 });
+
+// Legacy alias for backward compatibility
+export const pawsTransferSchema = pointsTransferSchema;
 
 // Search schema
 export const searchSchema = z.object({
@@ -223,11 +226,14 @@ export const formatCurrency = (amount) => {
   }).format(amount);
 };
 
-export const formatPawsAmount = (amount) => {
+export const formatPointsAmount = (amount) => {
   if (typeof amount !== 'number') return '0';
   
   return amount.toLocaleString();
 };
+
+// Legacy alias for backward compatibility
+export const formatPawsAmount = formatPointsAmount;
 
 // Form field validation helpers for React Hook Form
 export const getFieldValidation = (schema) => {

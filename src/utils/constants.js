@@ -1,6 +1,6 @@
-// API Configuration
+// API Configuration - Temporarily forced to production URL
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8787',
+  BASE_URL: 'https://rawgle-backend-prod.findrawdogfood.workers.dev',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000,
@@ -22,15 +22,19 @@ export const PAGINATION_CONFIG = {
   NOTIFICATIONS_PAGE_SIZE: 20,
 };
 
-// PAWS System
-export const PAWS_CONFIG = {
+// Reward Points System (Simple Points - No Crypto)
+export const REWARDS_CONFIG = {
   WELCOME_BONUS: 100,
   REVIEW_REWARD: 50,
   ORDER_PERCENTAGE: 0.1, // 10%
   TRANSFER_MIN_AMOUNT: 10,
   TRANSFER_MAX_AMOUNT: 10000,
   DAILY_EARN_LIMIT: 1000,
+  POINT_TO_DOLLAR_VALUE: 0.01, // 1 point = $0.01
 };
+
+// Backward compatibility alias (Keep API compatibility)
+export const PAWS_CONFIG = REWARDS_CONFIG;
 
 // Supplier Categories
 export const SUPPLIER_CATEGORIES = [
@@ -114,8 +118,8 @@ export const REVIEW_RATINGS = {
 // Notification Types
 export const NOTIFICATION_TYPES = {
   ORDER_STATUS: 'order_status',
-  PAWS_EARNED: 'paws_earned',
-  PAWS_TRANSFER: 'paws_transfer',
+  POINTS_EARNED: 'points_earned', // Updated from paws_earned
+  POINTS_TRANSFER: 'points_transfer', // Updated from paws_transfer
   REVIEW_REMINDER: 'review_reminder',
   SUPPLIER_UPDATE: 'supplier_update',
   SYSTEM: 'system',
@@ -127,13 +131,13 @@ export const NOTIFICATION_TYPE_DISPLAY = {
     icon: '📦',
     color: 'text-blue-600',
   },
-  [NOTIFICATION_TYPES.PAWS_EARNED]: {
-    label: 'PAWS Earned',
+  [NOTIFICATION_TYPES.POINTS_EARNED]: {
+    label: 'Points Earned',
     icon: '🐾',
     color: 'text-amber-600',
   },
-  [NOTIFICATION_TYPES.PAWS_TRANSFER]: {
-    label: 'PAWS Transfer',
+  [NOTIFICATION_TYPES.POINTS_TRANSFER]: {
+    label: 'Points Transfer',
     icon: '💰',
     color: 'text-green-600',
   },
@@ -161,7 +165,8 @@ export const SORT_OPTIONS = {
   RATING: 'rating',
   PRICE_LOW: 'price_low',
   PRICE_HIGH: 'price_high',
-  PAWS_REWARDS: 'paws_rewards',
+  POINTS_REWARDS: 'points_rewards', // Updated from paws_rewards
+  PAWS_REWARDS: 'points_rewards', // Backward compatibility alias
   NEWEST: 'newest',
   OLDEST: 'oldest',
 };
@@ -172,7 +177,7 @@ export const SORT_DISPLAY = {
   [SORT_OPTIONS.RATING]: 'Rating: Highest',
   [SORT_OPTIONS.PRICE_LOW]: 'Price: Low to High',
   [SORT_OPTIONS.PRICE_HIGH]: 'Price: High to Low',
-  [SORT_OPTIONS.PAWS_REWARDS]: 'PAWS Rewards: Highest',
+  [SORT_OPTIONS.POINTS_REWARDS]: 'Reward Points: Highest',
   [SORT_OPTIONS.NEWEST]: 'Newest First',
   [SORT_OPTIONS.OLDEST]: 'Oldest First',
 };
@@ -230,9 +235,9 @@ export const SUCCESS_MESSAGES = {
   LOGOUT_SUCCESS: 'You have been logged out successfully.',
   PROFILE_UPDATED: 'Your profile has been updated successfully.',
   PASSWORD_CHANGED: 'Your password has been changed successfully.',
-  REVIEW_SUBMITTED: 'Thank you for your review! You have earned PAWS rewards.',
+  REVIEW_SUBMITTED: 'Thank you for your review! You have earned reward points.',
   ORDER_PLACED: 'Your order has been placed successfully!',
-  PAWS_TRANSFERRED: 'PAWS transferred successfully!',
+  POINTS_TRANSFERRED: 'Points transferred successfully!',
 };
 
 // Local Storage Keys
@@ -264,7 +269,7 @@ export const ROUTES = {
   ORDERS: '/orders',
   ORDER_DETAILS: '/orders/:id',
   REVIEWS: '/reviews',
-  PAWS_WALLET: '/paws',
+  REWARDS_POINTS: '/rewards',
   PROFILE: '/profile',
   SETTINGS: '/settings',
   NOTIFICATIONS: '/notifications',

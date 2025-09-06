@@ -1,0 +1,35 @@
+/* Coolors Exported Palette - https://coolors.co/fe6734-f2c078-faedca-99c482-496f34 */
+
+- Tailwind
+
+{ 'giants_orange': { DEFAULT: '#fe6734', 100: '#3d0f00', 200: '#7a1f01', 300: '#b72e01', 400: '#f43e01', 500: '#fe6734', 600: '#fe855d', 700: '#fea485', 800: '#ffc2ae', 900: '#ffe1d6' }, 'earth_yellow': { DEFAULT: '#f2c078', 100: '#422907', 200: '#84520d', 300: '#c67b14', 400: '#eba037', 500: '#f2c078', 600: '#f4cc93', 700: '#f7d9ae', 800: '#fae5c9', 900: '#fcf2e4' }, 'dutch_white': { DEFAULT: '#faedca', 100: '#533f08', 200: '#a67e0f', 300: '#ebb626', 400: '#f3d279', 500: '#faedca', 600: '#fbf1d6', 700: '#fcf5e0', 800: '#fdf8ea', 900: '#fefcf5' }, 'pistachio': { DEFAULT: '#99c482', 100: '#1d2c15', 200: '#3a592a', 300: '#57853f', 400: '#75af56', 500: '#99c482', 600: '#aed09b', 700: '#c2dcb4', 800: '#d6e7cd', 900: '#ebf3e6' }, 'fern_green': { DEFAULT: '#496f34', 100: '#0f160a', 200: '#1d2c15', 300: '#2c431f', 400: '#3a592a', 500: '#496f34', 600: '#689e4a', 700: '#8cbc72', 800: '#b2d3a1', 900: '#d9e9d0' } }
+
+- CSV
+
+fe6734,f2c078,faedca,99c482,496f34
+
+- With #
+
+#fe6734, #f2c078, #faedca, #99c482, #496f34
+
+- Array
+
+["fe6734","f2c078","faedca","99c482","496f34"]
+
+- Object
+
+{"Giants orange":"fe6734","Earth yellow":"f2c078","Dutch white":"faedca","Pistachio":"99c482","Fern green":"496f34"}
+
+- Extended Array
+
+[{"name":"Giants orange","hex":"fe6734","rgb":[254,103,52],"cmyk":[0,59,80,0],"hsb":[15,80,100],"hsl":[15,99,60],"lab":[63,55,56]},{"name":"Earth yellow","hex":"f2c078","rgb":[242,192,120],"cmyk":[0,21,50,5],"hsb":[35,50,95],"hsl":[35,82,71],"lab":[81,9,43]},{"name":"Dutch white","hex":"faedca","rgb":[250,237,202],"cmyk":[0,5,19,2],"hsb":[44,19,98],"hsl":[44,83,89],"lab":[94,-1,19]},{"name":"Pistachio","hex":"99c482","rgb":[153,196,130],"cmyk":[22,0,34,23],"hsb":[99,34,77],"hsl":[99,36,64],"lab":[75,-26,29]},{"name":"Fern green","hex":"496f34","rgb":[73,111,52],"cmyk":[34,0,53,56],"hsb":[99,53,44],"hsl":[99,36,32],"lab":[43,-25,28]}]
+
+- XML
+
+<palette>
+  <color name="Giants orange" hex="fe6734" r="254" g="103" b="52" />
+  <color name="Earth yellow" hex="f2c078" r="242" g="192" b="120" />
+  <color name="Dutch white" hex="faedca" r="250" g="237" b="202" />
+  <color name="Pistachio" hex="99c482" r="153" g="196" b="130" />
+  <color name="Fern green" hex="496f34" r="73" g="111" b="52" />
+</palette>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Star, Filter, Phone, Clock, ChevronRight, DollarSign, Truck, Shield, Award, MessageSquare, Menu, X } from 'lucide-react';
 import { suppliersAPI, authAPI, pawsAPI, apiUtils } from './services/api';
 import ProductionMap from './components/ProductionMap';
-import ChatInterface from './components/ChatInterface';
+// import ChatInterface from './components/ChatInterface'; // Temporarily disabled for deployment
 import MainMenu from './components/navigation/MainMenu';
 import PageRouter from './components/pages/PageRouter';
 
@@ -1076,12 +1076,13 @@ const RawgleApp = () => {
         </button>
       )}
 
-      {/* Chat Interface */}
+      {/* Chat Interface - Temporarily disabled for deployment
       <ChatInterface 
         isOpen={showChat}
         onClose={() => setShowChat(false)}
         user={user}
       />
+      */}
     </div>
   );
 };

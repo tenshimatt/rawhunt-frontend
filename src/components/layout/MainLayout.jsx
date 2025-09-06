@@ -4,7 +4,7 @@ import { Menu, MessageSquare, Bell } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { pawsAPI, apiUtils } from '../../services/api';
 import MainMenu from '../navigation/MainMenu';
-import ChatInterface from '../ChatInterface';
+// import ChatInterface from '../ChatInterface'; // Temporarily disabled for deployment
 
 // Reward Points Display Component
 const PAWSBalance = ({ balance = 0, loading = false, onClick }) => {
@@ -190,12 +190,13 @@ const MainLayout = () => {
         </button>
       )}
 
-      {/* Chat Interface */}
+      {/* Chat Interface - Temporarily disabled for deployment
       <ChatInterface 
         isOpen={showChat}
         onClose={() => setShowChat(false)}
         user={user}
       />
+      */}
     </div>
   );
 };

@@ -33,7 +33,7 @@ const PAWSBalance = ({ showDetails = false, className = '', onClick }) => {
           <span className="text-xs text-red-600">!</span>
         </div>
         <div>
-          <div className="text-xs text-red-600">PAWS Error</div>
+          <div className="text-xs text-red-600">Points Error</div>
           <div className="text-xs text-red-500">Unable to load</div>
         </div>
       </div>
@@ -55,8 +55,8 @@ const PAWSBalance = ({ showDetails = false, className = '', onClick }) => {
               <span className="text-lg">🐾</span>
             </div>
             <div>
-              <h3 className="font-bold text-amber-900">PAWS Balance</h3>
-              <p className="text-sm text-amber-700">Your reward points</p>
+              <h3 className="font-bold text-amber-900">Reward Points</h3>
+              <p className="text-sm text-amber-700">Your reward balance</p>
             </div>
           </div>
           <button
@@ -108,7 +108,7 @@ const PAWSBalance = ({ showDetails = false, className = '', onClick }) => {
           <div className="flex items-center justify-between text-sm">
             <span className="text-amber-700">Next reward at:</span>
             <span className="font-medium text-amber-900">
-              {formatPawsAmount(Math.ceil((balance + 1) / 100) * 100)} PAWS
+              {formatPawsAmount(Math.ceil((balance + 1) / 100) * 100)} Points
             </span>
           </div>
         </div>
@@ -126,7 +126,7 @@ const PAWSBalance = ({ showDetails = false, className = '', onClick }) => {
         <span className="text-xs">🐾</span>
       </div>
       <div className="text-left">
-        <div className="text-xs text-amber-600">PAWS Balance</div>
+        <div className="text-xs text-amber-600">Reward Points</div>
         {loading ? (
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 border border-amber-400 border-t-transparent rounded-full animate-spin"></div>

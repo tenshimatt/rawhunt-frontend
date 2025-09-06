@@ -1,5 +1,27 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { vi, beforeAll, afterAll, afterEach } from 'vitest';
+import { server } from '../../tests/mocks/server.js';
+
+// Start MSW server before all tests
+beforeAll(() => {
+  server.listen();
+  console.log('🚀 MSW server started for frontend tests');
+});
+
+// Reset handlers after each test
+afterEach(() => {
+  server.resetHandlers();
+  // Clear localStorage after each test
+  global.localStorage.clear();
+  // Clear all mocks
+  vi.clearAllMocks();
+});
+
+// Stop MSW server after all tests
+afterAll(() => {
+  server.close();
+  console.log('🛑 MSW server stopped');
+});
 
 // Mock window.alert
 global.alert = vi.fn();
@@ -9,25 +31,84 @@ global.open = vi.fn();
 
 // Mock localStorage
 const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
+  getItem: vi.fn((key) => {
+    const storage = localStorageMock.__storage || {};
+    return storage[key] || null;
+  }),
+  setItem: vi.fn((key, value) => {
+    localStorageMock.__storage = localStorageMock.__storage || {};
+    localStorageMock.__storage[key] = value;
+  }),
+  removeItem: vi.fn((key) => {
+    if (localStorageMock.__storage) {
+      delete localStorageMock.__storage[key];
+    }
+  }),
+  clear: vi.fn(() => {
+    localStorageMock.__storage = {};
+  }),
+  __storage: {}
 };
 global.localStorage = localStorageMock;
 
-// Mock the API services module directly
+// Mock sessionStorage
+global.sessionStorage = {
+  ...localStorageMock,
+  __storage: {}
+};
+
+// Mock the API services module directly (fallback for non-MSW tests)
 vi.mock('./services/api.js');
 
-// Mock fetch globally to prevent any fetch calls
+// Mock fetch globally (MSW will handle this, but fallback for edge cases)
 global.fetch = vi.fn();
 
 // Mock geolocation API
 global.navigator.geolocation = {
-  getCurrentPosition: vi.fn(),
+  getCurrentPosition: vi.fn((success) => {
+    setTimeout(() => success({
+      coords: {
+        latitude: 41.8781,
+        longitude: -87.6298,
+        accuracy: 100
+      }
+    }), 100);
+  }),
   watchPosition: vi.fn(),
   clearWatch: vi.fn(),
 };
+
+// Mock intersection observer
+global.IntersectionObserver = vi.fn(() => ({
+  disconnect: vi.fn(),
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+}));
+
+// Mock resize observer
+global.ResizeObserver = vi.fn(() => ({
+  disconnect: vi.fn(),
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+}));
+
+// Mock matchMedia for responsive design tests
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
+// Mock scrollTo for smooth scrolling tests
+global.scrollTo = vi.fn();
 
 // Test data for mocking
 export const mockSuppliersData = {

@@ -80,7 +80,7 @@ const SupplierSearch = ({ onResults, initialQuery = '', initialLocation = '' }) 
             Find Premium Raw Dog Food Near You
           </h1>
           <p className="text-xl text-emerald-100">
-            Discover trusted suppliers, earn PAWS rewards, and give your dog the nutrition they deserve
+            Discover trusted suppliers, earn reward points, and give your dog the nutrition they deserve
           </p>
         </div>
 
