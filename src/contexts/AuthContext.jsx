@@ -100,8 +100,8 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Google OAuth not configured. Please set VITE_GOOGLE_CLIENT_ID environment variable.');
       }
 
-      // Sign in with Google
-      const googleResult = await googleAuthService.signInWithPopup();
+      // Sign in with Google using redirect (no popup)
+      const googleResult = await googleAuthService.signInWithRedirect();
       
       // Send the Google credential to our backend for verification and user creation/login
       const response = await authAPI.syncAuth0User({

@@ -68,18 +68,19 @@ class GoogleAuthService {
   }
 
   /**
-   * Sign in with Google using popup
+   * Sign in with Google using redirect (no popup)
    * @returns {Promise<Object>} User credential information
    */
-  async signInWithPopup() {
+  async signInWithRedirect() {
     if (!this.clientId) {
       throw new Error('Google Client ID not configured. Please set VITE_GOOGLE_CLIENT_ID environment variable.');
     }
 
     await this.initialize();
 
-    return new Promise((resolve, reject) => {
-      try {
+    try {
+      // First try One Tap dialog
+      return new Promise((resolve, reject) => {
         // Set up the callback for this specific sign-in attempt
         this.setCredentialCallback((response) => {
           if (response.credential) {
@@ -95,19 +96,49 @@ class GoogleAuthService {
           }
         });
 
-        // Show the One Tap dialog or redirect to Google sign-in
+        // Show the One Tap dialog
         window.google.accounts.id.prompt((notification) => {
           if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            // One Tap was not displayed or skipped, fall back to popup
-            this.showPopupSignIn().then(resolve).catch(reject);
+            // One Tap was not displayed or skipped, redirect to Google
+            this.redirectToGoogle();
           }
         });
+      });
 
-      } catch (error) {
-        console.error('Google sign-in error:', error);
-        reject(error);
-      }
-    });
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      // Fallback to redirect
+      this.redirectToGoogle();
+      throw error;
+    }
+  }
+
+  /**
+   * Redirect to Google OAuth (no popup)
+   */
+  redirectToGoogle() {
+    const redirectUri = `${window.location.origin}/auth/google/callback`;
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${this.clientId}&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `response_type=code&` +
+      `scope=email profile&` +
+      `state=${this.generateState()}`;
+    
+    // Store the current page for redirect after auth
+    localStorage.setItem('pre_auth_path', window.location.pathname);
+    
+    // Redirect to Google
+    window.location.href = authUrl;
+  }
+
+  /**
+   * Generate a state parameter for CSRF protection
+   */
+  generateState() {
+    const state = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('google_oauth_state', state);
+    return state;
   }
 
   /**
